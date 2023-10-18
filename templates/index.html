@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- 사용할 css 파일을 만들고 경로 설정 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+
+    <!-- https://jh-tr.tistory.com/51 -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/redmond/jquery-ui.css" type="text/css" />
+    <!-- jqGrid CSS -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/jqgrid/4.6.0/css/ui.jqgrid.css" type="text/css" />
+    <!-- The actual JQuery code -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.10.2.min.js" ></script>
+    <!-- The JQuery UI code -->
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.10.3/jquery-ui.min.js" ></script>
+    <!-- The jqGrid language file code-->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jqgrid/4.6.0/i18n/grid.locale-kr.js" ></script>
+    <!-- The atual jqGrid code -->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jqgrid/4.6.0/jquery.jqGrid.src.js" ></script>
+
+    
+</head>
+<body>
+    <div class="hi">JQGrid test page</div>
+
+    <section>
+        <div class="camera">
+            <table id="grid"></table>
+            <div id="pager"></div>
+        </div>
+
+        <div class="algorithms">
+
+        </div>
+    </section>
+    
+    <script>
+        $(document).ready(function(){
+            $('#grid').jqGrid({
+                url: '/static/data.json',
+                mtype: 'get', //mtype을 빼고하면 플라스크에서는 테이블이 출력되지 않음
+                datatype: "json",
+                colModel: [
+                    {
+                        label: "Employee ID",
+                        name: 'EmployeeID',
+                        width: 75
+                    },
+                    {
+                        label: "First Name",
+                        name: 'FirstName',
+                        width: 140,
+                        editable: true // must set editable to true if you want to make the field editable
+                    },
+                    {
+                        label: "Last Name",
+                        name: 'LastName',
+                        width: 100,
+                        editable: true
+                    },
+                    {
+                        label : "City",
+                        name: 'City',
+                        width: 120,
+                        editable: true
+                    }
+                ],
+                height: 'auto',
+                sortname: 'id',
+                autowidth: 'true',
+                gridview: true,
+                autoencode: true,
+                viewrecords: true,
+                loadonce: true,
+                rowNum: 10,
+                rowList: [10, 20, 30],
+                pager: '#pager',
+                caption: 'jqGrid test',
+                emptyrecords: 'No Records To Display',
+                //415 Unsupported Media Type error 발생해서 ajaxEditOptions 추가
+                ajaxEditOptions: {
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json'
+                },
+                jsonreader: {
+                    repeatitems: true,
+                },
+                multiselect: false,
+            }).navGrid('#pager', {edit: true, add: true, del: true, search: true, refresh: true,},
+                {
+                    //EDIT OPTIONS
+                    width: 600,
+                    url: '/editColumn',
+                    closeAfterEdit: true,
+                    ajaxEditOptions: {
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json'
+                    },
+                    onclickSubmit: function (params, postData) {
+                        // Ensure the data sent to the server is in JSON format
+                        var editedData = {
+                            EmployeeId: postData.grid_id,
+                            FirstName: postData.FirstName,
+                            LastName: postData.LastName,
+                            City: postData.City
+                        };
+                        console.log('postData: ', postData);
+                        console.log('editedData: ', editedData);
+                        jsonData = JSON.stringify(editedData);
+                        console.log('jsonData: ', jsonData);
+                        return jsonData;
+                    },
+                    afterComplete: function(response){
+                        alert(response.responseText);
+                        $("#grid").trigger("reloadGrid");
+                    },
+                },
+                {
+                    //ADD OPTIONS
+                    width: 600,
+                    url: '/addColumn',
+                    closeAfterAdd: true,
+                    afterComplete: function(response){
+                        alert(response.responseText);
+                        $("#grid").trigger("reloadGrid");
+                    },
+                }, 
+                {
+                    //DELETE OPTIONS
+                    width: 600,
+                    url: '/delColumn',
+                    closeAfterDelete: true,
+                    afterComplete: function(response){
+                        console.log("DELETE afterComplete");
+                        alert(response.responseText);
+                        $("#grid").trigger("reloadGrid");
+                    },
+                }, 
+                {
+                    //SEARCH OPTIONS
+                    width: 600,
+                    multipleSearch: true,
+                }, 
+            );
+        });
+    </script>
+</body>
+</html>

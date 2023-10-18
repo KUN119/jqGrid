@@ -1,0 +1,11 @@
+section {
+    height: 700px;
+    width: 470px;
+    margin: 1em;
+}
+section .camera{
+    height: 50%;
+}
+section .algorithms{
+    height: 50%;
+}
